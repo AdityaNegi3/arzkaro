@@ -197,7 +197,7 @@ export default function HomePage({ onNavigate }: { onNavigate?: (p: string) => v
             {/* Placeholder for the group trips screenshot image */}
             <div className="w-full max-w-md h-auto border border-gray-200 shadow-xl rounded-lg overflow-hidden">
               <img
-                src="/homepage.png" // Placeholder: CHANGE THIS to your actual image file (e.g., /trip-image.png)
+                src="/homepage22.png" // Placeholder: CHANGE THIS to your actual image file (e.g., /trip-image.png)
                 alt="Group trip planning interface showing options"
                 className="w-full h-full object-cover"
               />
