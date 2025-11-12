@@ -95,7 +95,7 @@ export default function HomePage({ onNavigate }: { onNavigate?: (p: string) => v
                   playsInline
                   preload="auto"
                   className="absolute inset-0 w-full h-full object-cover"
-                  src="/arz 1.mp4"
+                  src="/Wait listing.mp4"
                 >
                   <source src="/arz 1.mp4" type="video/mp4" />
                   Your browser does not support the video tag.

@@ -14,8 +14,8 @@ export type MockEventItem = Omit<Event, 'artist_name'> & {
 // --- MOCK ARTISTS (For EventsPage & Artist Profiles) ---
 // Note: The structure for MOCK_ARTISTS remains the same as before.
 export const MOCK_ARTISTS = [
-  { name: 'Shivam', image_url: '/mock1.jpg' }, 
-  { name: 'ARZ', image_url: '/mock2.jpg' }, 
+  { name: 'Shivam', image_url: '/shivam1.jpeg' }, 
+  { name: 'ARZ', image_url: '/niyam1.jpeg' }, 
  
 ];
 
@@ -25,13 +25,13 @@ export const ALL_MOCK_EVENTS: MockEventItem[] = [
     id: 'evt-9',
     title: 'Shivam Performing Live',
     artist_name: 'Shivam', // Single artist remains a string
-    city: 'Mumbai',
+    city: 'Gurgoan',
     venue: 'Venue to be announced',
     event_date: new Date("2025-12-30T00:00:00.000Z").toISOString(),
     image_url: '/shivamposter.jpeg', // Listing Poster
     banner_image_url: '/shivambanner.jpeg', // Detail Page Banner (for the ARZ style page)
-    ticket_price: 1,
-    member_count: 650,
+    ticket_price: 999,
+    member_count: 9,
     genre: 'acoustic',
     description: "Get ready for an unforgettable night as Shivam brings his soulful voice, raw emotion, and high-energy performance to the stage. Venue will be announced soon — stay tuned for the reveal. One thing’s guaranteed: it’s going to be a night full of music, memories, and pure vibes.",
     includes: ["Concert Entry (General Admission)", "Exclusive Merch Discount Voucher (10%)", "Full Group Chat Access"],
@@ -42,10 +42,10 @@ export const ALL_MOCK_EVENTS: MockEventItem[] = [
     id: 'evt-10',
     title: 'Post Malone Listening Party',
     artist_name: 'ARZ',
-    city: 'Delhi',
+    city: 'Gurgoan',
     venue: 'Venue to be announced',
-    event_date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10).toISOString(),
-    image_url: '/post.jpg', // Listing Poster
+    event_date: new Date("2025-12-03T00:00:00Z").toISOString(),
+    image_url: '/malone.png', // Listing Poster
     banner_image_url: '/banner.jpg', // Detail Page Banner (This is the one for the screenshot you shared)
     ticket_price: 599,
     member_count: 16,
