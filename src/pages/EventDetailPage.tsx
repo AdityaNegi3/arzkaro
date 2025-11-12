@@ -6,12 +6,12 @@ import Forms from '../components/Form'; // <-- ensure path is correct
 // Minimal mock artists (ensure your public images exist)
 const MOCK_ARTISTS_DATA = [
   { name: 'Shivam', image_url: '/shivam1.jpeg' },
-  { name: 'ARZ', image_url: '/niyam1.jpeg' },
+  { name: 'Niyam', image_url: '/niyam1.jpeg' },
   { name: 'Kinshu', image_url: '/mockArtist3.jpg' },
   { name: 'Rajat', image_url: '/mockArtist4.jpg' },
   { name: 'Raahi', image_url: '/mockArtist5.jpg' },
   { name: 'Gauntlet', image_url: '/mockArtist6.jpg' },
-  { name: 'Niyam', image_url: '/mockArtist7.jpg' },
+
   { name: 'DJ Maverick', image_url: '/mockArtist8.jpg' },
 ];
 
