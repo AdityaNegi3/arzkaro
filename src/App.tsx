@@ -1,5 +1,4 @@
-// src/App.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext.tsx';
 
 // Import all components / pages
@@ -53,12 +52,91 @@ interface MockUser {
   email: string;
 }
 
+type PageName =
+  | 'home'
+  | 'events'
+  | 'event-detail'
+  | 'activities'
+  | 'activity-detail'
+  | 'trips'
+  | 'trip-detail'
+  | 'profile'
+  | 'chat-window'
+  | 'event-chat'
+  | 'my-tickets'
+  | 'terms'
+  | 'thankyou';
+
 export default function App() {
   return (
     <AuthProvider>
       <AppContent />
     </AuthProvider>
   );
+}
+
+function parsePathname(pathname: string) {
+  // Normalize pathname (no trailing slash except root)
+  const clean = pathname.replace(/\/+$/, '') || '/';
+  // Patterns:
+  if (clean === '/' || clean === '') return { page: 'home' as PageName };
+  if (clean === '/events') return { page: 'events' as PageName };
+  if (clean === '/activities') return { page: 'activities' as PageName };
+  if (clean === '/trips') return { page: 'trips' as PageName };
+  if (clean === '/profile') return { page: 'profile' as PageName };
+  if (clean === '/chat' || clean === '/chat-window') return { page: 'chat-window' as PageName };
+  if (clean === '/thankyou') return { page: 'thankyou' as PageName };
+  if (clean === '/terms') return { page: 'terms' as PageName };
+  if (clean === '/my-tickets') return { page: 'my-tickets' as PageName };
+
+  // dynamic routes
+  const eventMatch = clean.match(/^\/event\/([^/]+)$/);
+  if (eventMatch) return { page: 'event-detail' as PageName, id: eventMatch[1] };
+
+  const tripMatch = clean.match(/^\/trip\/([^/]+)$/);
+  if (tripMatch) return { page: 'trip-detail' as PageName, id: tripMatch[1] };
+
+  const activityMatch = clean.match(/^\/activity\/([^/]+)$/);
+  if (activityMatch) return { page: 'activity-detail' as PageName, id: activityMatch[1] };
+
+  const eventChatMatch = clean.match(/^\/event-chat\/([^/]+)$/);
+  if (eventChatMatch) return { page: 'event-chat' as PageName, id: eventChatMatch[1] };
+
+  // fallback
+  return { page: 'home' as PageName };
+}
+
+function pathFor(page: PageName, id?: string | null) {
+  switch (page) {
+    case 'home':
+      return '/';
+    case 'events':
+      return '/events';
+    case 'activities':
+      return '/activities';
+    case 'trips':
+      return '/trips';
+    case 'profile':
+      return '/profile';
+    case 'chat-window':
+      return '/chat';
+    case 'thankyou':
+      return '/thankyou';
+    case 'terms':
+      return '/terms';
+    case 'my-tickets':
+      return '/my-tickets';
+    case 'event-detail':
+      return id ? `/event/${id}` : '/events';
+    case 'trip-detail':
+      return id ? `/trip/${id}` : '/trips';
+    case 'activity-detail':
+      return id ? `/activity/${id}` : '/activities';
+    case 'event-chat':
+      return id ? `/event-chat/${id}` : '/events';
+    default:
+      return '/';
+  }
 }
 
 function AppContent() {
@@ -71,30 +149,140 @@ function AppContent() {
   const loading = authContext.loading;
 
   // default page
-  const [currentPage, setCurrentPage] = useState<string>('home');
+  const [currentPage, setCurrentPage] = useState<PageName>('home');
 
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedTrip, setSelectedTrip] = useState<DetailedTrip | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [showAuth, setShowAuth] = useState<boolean>(false);
 
-  // When the app mounts, check the URL path so direct navigations (like /thankyou) work
-  useEffect(() => {
-    const path = window.location.pathname || '/';
-    // normalize trailing slashes
-    const cleanPath = path.replace(/\/+$/, '') || '/';
+  // Navigation helper that syncs history
+  const handleNavigate = useCallback((page: PageName, id?: string | null, replace = false) => {
+    // update app state
+    setSelectedEvent(null);
+    setSelectedTrip(null);
+    setSelectedActivity(null);
 
-    if (cleanPath === '/thankyou') {
-      setCurrentPage('thankyou');
-    } else if (cleanPath === '/' || cleanPath === '') {
-      setCurrentPage('home');
-    } else {
-      // if you have other deep routes in future, handle them here
-      // fallback to 'home' for unknown paths
-      setCurrentPage('home');
+    // if navigating to a detail page, restore the selected item so back/forward states can check it
+    if (page === 'event-detail' && id) {
+      const ev = getEventDataById(id);
+      setSelectedEvent(ev);
+      if (!ev) page = 'events'; // fallback
+    } else if (page === 'trip-detail' && id) {
+      const tr = getTripDataById(id);
+      setSelectedTrip(tr);
+      if (!tr) page = 'trips';
+    } else if (page === 'activity-detail' && id) {
+      const ac = getActivityDataById(id);
+      setSelectedActivity(ac);
+      if (!ac) page = 'activities';
     }
-    // we only want to run this once on mount
+
+    setCurrentPage(page);
+
+    // update URL
+    const newPath = pathFor(page, id);
+    try {
+      if (replace) window.history.replaceState({}, '', newPath);
+      else window.history.pushState({}, '', newPath);
+    } catch (err) {
+      // some environments (file://) can throw; ignore
+      // console.warn('History API failed', err);
+    }
+  }, []);
+
+  // When the app mounts, read the URL and set the app state (supports deep linking)
+  useEffect(() => {
+    const { page, id } = parsePathname(window.location.pathname);
+    // hydrate state based on parsed path
+    if (page === 'event-detail' && id) {
+      const ev = getEventDataById(id);
+      if (ev) {
+        setSelectedEvent(ev);
+        setCurrentPage('event-detail');
+      } else {
+        setCurrentPage('events');
+        // ensure URL matches
+        window.history.replaceState({}, '', '/events');
+      }
+    } else if (page === 'trip-detail' && id) {
+      const tr = getTripDataById(id);
+      if (tr) {
+        setSelectedTrip(tr);
+        setCurrentPage('trip-detail');
+      } else {
+        setCurrentPage('trips');
+        window.history.replaceState({}, '', '/trips');
+      }
+    } else if (page === 'activity-detail' && id) {
+      const ac = getActivityDataById(id);
+      if (ac) {
+        setSelectedActivity(ac);
+        setCurrentPage('activity-detail');
+      } else {
+        setCurrentPage('activities');
+        window.history.replaceState({}, '', '/activities');
+      }
+    } else {
+      setCurrentPage(page);
+      // normalize URL without creating history entry
+      window.history.replaceState({}, '', pathFor(page, (id as string) || null));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // popstate handler: when user clicks back/forward in browser
+  useEffect(() => {
+    const onPopState = () => {
+      const { page, id } = parsePathname(window.location.pathname);
+      if (page === 'event-detail' && id) {
+        const ev = getEventDataById(id);
+        if (ev) {
+          setSelectedEvent(ev);
+          setSelectedTrip(null);
+          setSelectedActivity(null);
+          setCurrentPage('event-detail');
+          return;
+        }
+        setCurrentPage('events');
+        return;
+      }
+
+      if (page === 'trip-detail' && id) {
+        const tr = getTripDataById(id);
+        if (tr) {
+          setSelectedTrip(tr);
+          setSelectedEvent(null);
+          setSelectedActivity(null);
+          setCurrentPage('trip-detail');
+          return;
+        }
+        setCurrentPage('trips');
+        return;
+      }
+
+      if (page === 'activity-detail' && id) {
+        const ac = getActivityDataById(id);
+        if (ac) {
+          setSelectedActivity(ac);
+          setSelectedEvent(null);
+          setSelectedTrip(null);
+          setCurrentPage('activity-detail');
+          return;
+        }
+        setCurrentPage('activities');
+        return;
+      }
+
+      // simple pages
+      setSelectedEvent(null);
+      setSelectedTrip(null);
+      setSelectedActivity(null);
+      setCurrentPage(page);
+    };
+
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   // ✅ Scroll to top whenever the user navigates (keeps UX consistent)
@@ -105,53 +293,34 @@ function AppContent() {
     });
   }, [currentPage]);
 
-  const selectedEventId = selectedEvent?.id || null;
-  const selectedTripId = selectedTrip?.id || null;
-
-  const handleNavigate = (page: string) => {
-    // If someone triggers navigate('/thankyou') via code, allow it
-    // also clear selected items unless moving to a detail page
-    setSelectedEvent(null);
-    setSelectedTrip(null);
-    setSelectedActivity(null);
-
-    setCurrentPage(page);
-
-    // If we want to support deep-linking without reload, we could pushState:
-    // for now keep URL handling minimal. Uncomment to keep URL in sync:
-    // window.history.pushState({}, '', page === 'home' ? '/' : `/${page}`);
-  };
-
   const handleEventSelect = (eventId: string) => {
     const eventData = getEventDataById(eventId);
     if (eventData) {
-      setSelectedEvent(eventData);
-      setCurrentPage('event-detail');
+      // push state with event id
+      handleNavigate('event-detail', eventId);
     } else {
       console.error(`Event with ID ${eventId} not found!`);
-      setCurrentPage('events');
+      handleNavigate('events');
     }
   };
 
   const handleTripSelect = (tripId: string) => {
     const tripData = getTripDataById(tripId);
     if (tripData) {
-      setSelectedTrip(tripData);
-      setCurrentPage('trip-detail');
+      handleNavigate('trip-detail', tripId);
     } else {
       console.error(`Trip with ID ${tripId} not found!`);
-      setCurrentPage('trips');
+      handleNavigate('trips');
     }
   };
 
   const handleActivitySelect = (activityId: string) => {
     const activityData = getActivityDataById(activityId);
     if (activityData) {
-      setSelectedActivity(activityData);
-      setCurrentPage('activity-detail');
+      handleNavigate('activity-detail', activityId);
     } else {
       console.error(`Activity with ID ${activityId} not found!`);
-      setCurrentPage('activities');
+      handleNavigate('activities');
     }
   };
 
@@ -161,7 +330,7 @@ function AppContent() {
       setSelectedEvent(eventData);
       setSelectedTrip(null);
       setSelectedActivity(null);
-      setCurrentPage('chat-window');
+      handleNavigate('chat-window'); // chat window generic; if you want event-specific chat, use event-chat route
       return;
     }
 
@@ -170,7 +339,7 @@ function AppContent() {
       setSelectedTrip(tripData);
       setSelectedEvent(null);
       setSelectedActivity(null);
-      setCurrentPage('chat-window');
+      handleNavigate('chat-window');
       return;
     }
 
@@ -185,7 +354,7 @@ function AppContent() {
     setSelectedEvent(null);
     setSelectedTrip(null);
     setSelectedActivity(null);
-    setCurrentPage('chat-window');
+    handleNavigate('chat-window');
   };
 
   if (loading) {
@@ -200,9 +369,26 @@ function AppContent() {
     <div className="flex flex-col min-h-screen">
       <Navbar
         onAuthClick={() => setShowAuth(true)}
-        onProfileClick={() => setCurrentPage('profile')}
+        onProfileClick={() => handleNavigate('profile')}
         currentPage={currentPage}
-        onNavigate={(p: string) => handleNavigate(p)}
+        onNavigate={(p: string) => {
+          // keep API compatible for components that pass a string route name
+          // Map simple strings to PageName where possible
+          const mapping: { [k: string]: PageName } = {
+            home: 'home',
+            events: 'events',
+            activities: 'activities',
+            trips: 'trips',
+            profile: 'profile',
+            chat: 'chat-window',
+            'chat-window': 'chat-window',
+            'my-tickets': 'my-tickets',
+            terms: 'terms',
+            thankyou: 'thankyou',
+          };
+          const page = mapping[p] || 'home';
+          handleNavigate(page);
+        }}
         onChatClick={handleNavbarChatClick}
       />
 
@@ -210,7 +396,7 @@ function AppContent() {
       <div className="h-24" />
 
       <main className="flex-grow">
-        {currentPage === 'home' && <HomePage onNavigate={handleNavigate} />}
+        {currentPage === 'home' && <HomePage onNavigate={() => handleNavigate('home')} />}
 
         {currentPage === 'events' && (
           <EventsPage onEventSelect={handleEventSelect} onChatOpen={handleChatOpen} />
@@ -223,7 +409,7 @@ function AppContent() {
         {currentPage === 'activity-detail' && selectedActivity && (
           <ActivityDetailPage
             activity={selectedActivity}
-            onBack={() => setCurrentPage('activities')}
+            onBack={() => handleNavigate('activities')}
           />
         )}
 
@@ -235,10 +421,10 @@ function AppContent() {
           />
         )}
 
-        {currentPage === 'trip-detail' && selectedTripId && (
+        {currentPage === 'trip-detail' && selectedTrip && (
           <TripDetailsPage
-            tripId={selectedTripId}
-            onBack={() => setCurrentPage('trips')}
+            tripId={selectedTrip.id}
+            onBack={() => handleNavigate('trips')}
             onChatOpen={handleChatOpen}
             currentUserId={user?.uid || null}
           />
@@ -249,9 +435,9 @@ function AppContent() {
         {currentPage === 'chat-window' && (
           <ChatWindow
             onBack={() => {
-              if (selectedEvent) setCurrentPage('event-detail');
-              else if (selectedTrip) setCurrentPage('trip-detail');
-              else setCurrentPage('home');
+              if (selectedEvent) handleNavigate('event-detail', selectedEvent.id);
+              else if (selectedTrip) handleNavigate('trip-detail', selectedTrip.id);
+              else handleNavigate('home');
             }}
             user={user}
           />
@@ -260,15 +446,15 @@ function AppContent() {
         {currentPage === 'event-detail' && selectedEvent && (
           <EventDetailPage
             event={selectedEvent}
-            onBack={() => setCurrentPage('events')}
+            onBack={() => handleNavigate('events')}
             onChatOpen={handleChatOpen}
           />
         )}
 
-        {currentPage === 'event-chat' && selectedEventId && (
+        {currentPage === 'event-chat' && selectedEvent && (
           <EventChatPage
-            eventId={selectedEventId}
-            onBack={() => setCurrentPage('event-detail')}
+            eventId={selectedEvent.id}
+            onBack={() => handleNavigate('event-detail', selectedEvent.id)}
           />
         )}
 
@@ -276,7 +462,7 @@ function AppContent() {
           <MyTicketsPage onEventSelect={handleEventSelect} onChatOpen={handleChatOpen} />
         )}
 
-        {currentPage === 'terms' && <TermsPage onBack={() => setCurrentPage('home')} />}
+        {currentPage === 'terms' && <TermsPage onBack={() => handleNavigate('home')} />}
 
         {currentPage === 'thankyou' && <Thankyou />}
 
@@ -284,7 +470,7 @@ function AppContent() {
       </main>
 
       {/* Pass handleNavigate so Footer can trigger navigation (e.g., to 'terms' or 'thankyou') */}
-      <Footer onNavigate={handleNavigate} />
+      <Footer onNavigate={(p: string) => handleNavigate(p as PageName)} />
     </div>
   );
 }
