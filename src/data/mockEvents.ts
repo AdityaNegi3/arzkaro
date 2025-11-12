@@ -27,9 +27,9 @@ export const ALL_MOCK_EVENTS: MockEventItem[] = [
     artist_name: 'Shivam', // Single artist remains a string
     city: 'Mumbai',
     venue: 'Venue to be announced',
-    event_date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
-    image_url: '/mock1.jpg', // Listing Poster
-    banner_image_url: '/banner.jpg', // Detail Page Banner (for the ARZ style page)
+    event_date: new Date("2025-12-30T00:00:00.000Z").toISOString(),
+    image_url: '/shivamposter.jpeg', // Listing Poster
+    banner_image_url: '/shivambanner.jpeg', // Detail Page Banner (for the ARZ style page)
     ticket_price: 1,
     member_count: 650,
     genre: 'acoustic',
