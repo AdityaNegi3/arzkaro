@@ -202,10 +202,10 @@ export default function EventDetailPage({
               </section>
             )}
 
-            <section className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+            {/* <section className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
               <h3 className="text-2xl font-bold mb-4">Event Guide</h3>
               <div className="min-h-[120px] md:min-h-[150px] rounded-lg border-dashed border-2 border-gray-200 p-6 text-base text-gray-600 flex items-center justify-center">Copy as it is from District Platform.</div>
-            </section>
+            </section> */}
 
             <section className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
               <h3 className="text-2xl font-bold mb-4">Venue: {currentEvent.venue}</h3>
@@ -214,13 +214,13 @@ export default function EventDetailPage({
                 <p>Interactive Map of {currentEvent.venue} Location</p>
               </div>
             </section>
-
+{/* 
             <section className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
               <h3 className="text-2xl font-bold mb-4">Gallery & Media</h3>
               <div className="h-28 md:h-40 rounded-lg border-dashed border-2 border-gray-200 flex items-center justify-center text-sm text-gray-500">
                 Event Images and Videos
               </div>
-            </section>
+            </section> */}
 
             <section className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
               <h3 className="text-2xl font-bold mb-2">Frequently Asked Questions (FAQ)</h3>
