@@ -44,7 +44,8 @@ export default function Navbar({
           onNavigate(page);
           if (onClick) onClick();
         }}
-        className={`inline-flex items-center px-4 py-2 rounded-full text-base font-bold tracking-wide transition-all duration-200 ${
+        aria-current={isActive ? 'page' : undefined}
+        className={`inline-flex items-center px-4 py-2 rounded-full text-base font-bold tracking-wide transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-60 ${
           isActive
             ? `${colorClasses} shadow-sm text-gray-900`
             : `text-gray-700 hover:text-gray-900 ${colorClasses}`
@@ -90,17 +91,20 @@ export default function Navbar({
           <NavItem
             label="Events"
             page="events"
-            colorClasses="hover:bg-rose-200 active:bg-rose-200 bg-rose-200/0"
+            // Events color: #FF785A
+            colorClasses="hover:bg-[#FF785A] active:bg-[#FF785A] bg-[#FF785A]/0"
           />
           <NavItem
             label="Trips"
             page="trips"
-            colorClasses="hover:bg-lime-200 active:bg-lime-200 bg-lime-200/0"
+            // Trips color: #ABDF8B
+            colorClasses="hover:bg-[#ABDF8B] active:bg-[#ABDF8B] bg-[#ABDF8B]/0"
           />
           <NavItem
             label="Activities"
             page="activities"
-            colorClasses="hover:bg-sky-200 active:bg-sky-200 bg-sky-200/0"
+            // Activities color: #99C1EC
+            colorClasses="hover:bg-[#99C1EC] active:bg-[#99C1EC] bg-[#99C1EC]/0"
           />
         </div>
 
@@ -200,21 +204,21 @@ export default function Navbar({
             <NavItem
               label="Events"
               page="events"
-              colorClasses="hover:bg-rose-200 active:bg-rose-200 bg-rose-200/0"
+              colorClasses="hover:bg-[#FF785A] active:bg-[#FF785A] bg-[#FF785A]/0"
               onClick={() => setMobileOpen(false)}
             />
 
             <NavItem
               label="Trips"
               page="trips"
-              colorClasses="hover:bg-lime-200 active:bg-lime-200 bg-lime-200/0"
+              colorClasses="hover:bg-[#ABDF8B] active:bg-[#ABDF8B] bg-[#ABDF8B]/0"
               onClick={() => setMobileOpen(false)}
             />
 
             <NavItem
               label="Activities"
               page="activities"
-              colorClasses="hover:bg-sky-200 active:bg-sky-200 bg-sky-200/0"
+              colorClasses="hover:bg-[#99C1EC] active:bg-[#99C1EC] bg-[#99C1EC]/0"
               onClick={() => setMobileOpen(false)}
             />
           </div>

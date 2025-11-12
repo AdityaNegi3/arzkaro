@@ -15,7 +15,7 @@ export type MockEventItem = Omit<Event, 'artist_name'> & {
 // Note: The structure for MOCK_ARTISTS remains the same as before.
 export const MOCK_ARTISTS = [
   { name: 'Shivam', image_url: '/shivam1.jpeg' }, 
-  { name: 'ARZ', image_url: '/niyam1.jpeg' }, 
+  { name: 'Niyam', image_url: '/niyam1.jpeg' }, 
  
 ];
 
@@ -41,7 +41,7 @@ export const ALL_MOCK_EVENTS: MockEventItem[] = [
   {
     id: 'evt-10',
     title: 'Post Malone Listening Party',
-    artist_name: 'ARZ',
+    artist_name: 'Niyam',
     city: 'Gurgoan',
     venue: 'Venue to be announced',
     event_date: new Date("2025-12-03T00:00:00Z").toISOString(),
